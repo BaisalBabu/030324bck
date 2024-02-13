@@ -45,14 +45,40 @@ router.get("/getallrooms", async (req, res) => {
 
 // Route to get room by ID
 router.post("/getroombyid", async (req, res) => {
-    const roomid = req.body.roomid;
-    try {
-      const foundRoom = await Room.findOne({ _id: roomid });
-      res.send(foundRoom);
-    } catch (error) {
+  const { roomids } = req.body;
+  try {
+      const foundRooms = await Room.find({ _id: { $in: roomids } });
+
+      // Modify each room object to include base64 encoded image data
+      const roomsWithImages = foundRooms.map(room => ({
+          _id: room._id,
+          name: room.name,
+          rentperday: room.rentperday,
+          maxcount: room.maxcount,
+          description: room.description,
+          conditioning: room.conditioning,
+          type: room.type,
+          count: room.count,
+          // Convert binary image data to base64
+          imagefile1: room.imagefile1 ? {
+              data: room.imagefile1.data.toString('base64'),
+              contentType: room.imagefile1.contentType
+          } : null,
+          imagefile2: room.imagefile2 ? {
+              data: room.imagefile2.data.toString('base64'),
+              contentType: room.imagefile2.contentType
+          } : null,
+          imagefile3: room.imagefile3 ? {
+              data: room.imagefile3.data.toString('base64'),
+              contentType: room.imagefile3.contentType
+          } : null,
+      }));
+
+      res.send(roomsWithImages);
+  } catch (error) {
       console.log(error);
       res.status(500).send("Internal Server Error");
-    }
+  }
 });
 
 // Route to add a new room

@@ -8,7 +8,7 @@ const { v4: uuidv4 } = require('uuid');
 
 
 router.post("/bookroom", async (req, res) => {
-    const { room, userid, fromdate, todate, totalamount, totaldays, token } = req.body;
+    const { room, userid, fromdate, todate, totalamount, totaldays, token, guestCount } = req.body;
 
     try {
         const customer = await stripe.customers.create({
@@ -35,7 +35,8 @@ router.post("/bookroom", async (req, res) => {
                     todate,
                     totalamount,
                     totaldays,
-                    transactionid: payment.id // Use the actual transaction ID
+                    transactionid: payment.id, // Use the actual transaction ID
+                    guestCount
                 });
 
                 const booking = await newbooking.save();
@@ -48,17 +49,17 @@ router.post("/bookroom", async (req, res) => {
                     status: booking.status
                 });
                 await roomtemp.save();
-                
-                // Decrement the count for the booked room
-                const updatedRoom = await Room.findByIdAndUpdate(
-                    room._id,
-                    { $inc: { count: -1 } },
-                    { new: true }
-                );
 
-                if (!updatedRoom) {
-                    return res.status(404).json({ success: false, message: "Room not found" });
-                }
+                // Decrement the count for the booked room
+                // const updatedRoom = await Room.findByIdAndUpdate(
+                //     room._id,
+                //     { $inc: { count: -1 } },
+                //     { new: true }
+                // );
+
+                // if (!updatedRoom) {
+                //     return res.status(404).json({ success: false, message: "Room not found" });
+                // }
 
                 res.status(200).send("Room Booked Successfully");
             } catch (error) {
@@ -73,7 +74,6 @@ router.post("/bookroom", async (req, res) => {
         res.status(400).json({ error });
     }
 });
-    
 
 router.post("/getbookingsbyuserid", async (req, res) => {
     console.log("Request received for getbookingsbyuserid");
@@ -117,11 +117,11 @@ router.post("/cancelbooking", async (req, res) => {
             await room.save();
 
             // Increment the count for the canceled room
-            const updatedRoom = await Room.findByIdAndUpdate(
-                roomid,
-                { $inc: { count: 1 } },
-                { new: true }
-            );
+            // const updatedRoom = await Room.findByIdAndUpdate(
+            //     roomid,
+            //     { $inc: { count: 1 } },
+            //     { new: true }
+            // );
 
             if (!updatedRoom) {
                 return res.status(404).json({
