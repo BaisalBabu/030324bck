@@ -20,6 +20,7 @@ router.get("/getallrooms", async (req, res) => {
       conditioning: room.conditioning,
       type: room.type,
       count: room.count,
+      display:room.display,
       // Convert binary image data to base64
       imagefile1: room.imagefile1 ? {
         data: room.imagefile1.data.toString('base64'),
@@ -59,6 +60,7 @@ router.post("/getroombyid", async (req, res) => {
           conditioning: room.conditioning,
           type: room.type,
           count: room.count,
+          display:room.display,
           // Convert binary image data to base64
           imagefile1: room.imagefile1 ? {
               data: room.imagefile1.data.toString('base64'),
