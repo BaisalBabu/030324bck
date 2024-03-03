@@ -3,15 +3,24 @@ const router = express.Router();
 const User = require("../model/user"); // Use uppercase 'User' for consistency and clarity
 const userModel = require("../model/user");
 
+
 router.post("/register", async (req, res) => {
-  const newUser = new User(req.body); // Use uppercase 'User' here as well
   try {
+    // Check if the email already exists
+    const existingUser = await User.findOne({ email: req.body.email });
+    if (existingUser) {
+      return res.status(400).json({ error: "Email already exists" });
+    }
+    
+    // If the email doesn't exist, proceed with user creation
+    const newUser = new User(req.body); // Use uppercase 'User' here as well
     const savedUser = await newUser.save();
     res.send("User registered successfully");
   } catch (error) {
     return res.status(400).json({ error });
   }
 });
+
 
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;

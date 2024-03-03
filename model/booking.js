@@ -13,6 +13,10 @@ const bookingSchema = mongoose.Schema({
         type: String,
         required: true
     },
+    username: { // New field for username
+        type: String,
+        required: true
+    },
     fromdate: {
         type: String,
         required: true
@@ -29,10 +33,10 @@ const bookingSchema = mongoose.Schema({
         type: Number,
         required: true
     },
-    transactionid: {
-        type: String,
-        required: true
-    },
+    // transactionid: {
+    //     type: String,
+    //     required: true
+    // },
     status: {
         type: String,
         required: true,

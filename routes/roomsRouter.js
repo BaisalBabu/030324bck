@@ -144,34 +144,41 @@ router.put('/updateroom/:id', upload.fields([
   try {
     // Check if any files are uploaded
     if (imageFiles && Object.keys(imageFiles).length > 0) {
-      updatedRoomDetails.imagefile1 = {
-        data: imageFiles['imagefile1'][0].buffer,
-        contentType: imageFiles['imagefile1'][0].mimetype,
-      };
-      updatedRoomDetails.imagefile2 = {
-        data: imageFiles['imagefile2'][0].buffer,
-        contentType: imageFiles['imagefile2'][0].mimetype,
-      };
-      updatedRoomDetails.imagefile3 = {
-        data: imageFiles['imagefile3'][0].buffer,
-        contentType: imageFiles['imagefile3'][0].mimetype,
-      };
+      // Update image files if they exist
+      if (imageFiles['imagefile1']) {
+        updatedRoomDetails.imagefile1 = {
+          data: imageFiles['imagefile1'][0].buffer,
+          contentType: imageFiles['imagefile1'][0].mimetype,
+        };
+      }
+
+      if (imageFiles['imagefile2']) {
+        updatedRoomDetails.imagefile2 = {
+          data: imageFiles['imagefile2'][0].buffer,
+          contentType: imageFiles['imagefile2'][0].mimetype,
+        };
+      }
+
+      if (imageFiles['imagefile3']) {
+        updatedRoomDetails.imagefile3 = {
+          data: imageFiles['imagefile3'][0].buffer,
+          contentType: imageFiles['imagefile3'][0].mimetype,
+        };
+      }
     }
 
-    // Perform the update only if files are uploaded
+    // Perform the update only if there are updated room details
     if (Object.keys(updatedRoomDetails).length > 0) {
       await Room.updateOne({ _id: roomId }, { $set: updatedRoomDetails });
       res.send('Room updated successfully');
     } else {
-      res.send('No files uploaded. Room details remain unchanged.');
+      res.send('No files uploaded and no room details changed.');
     }
   } catch (error) {
     console.error(error);
     res.status(500).send('Internal Server Error');
   }
-});
-
-// Route to delete a room by ID
+});// Route to delete a room by ID
 // Route to delete a room by ID
 router.delete("/deleteroom/:id", async (req, res) => {
   const roomId = req.params.id;

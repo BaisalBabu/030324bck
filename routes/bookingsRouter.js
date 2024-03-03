@@ -2,78 +2,42 @@ const express = require('express');
 const router = express.Router();
 const Booking = require("../model/booking");
 const Room = require("../model/room");
-const stripe = require('stripe')(
-    'sk_test_51OJAnCSFlsOEfvLRiG9jORBj30G1WAx420We6VyGO9iiNNYVYnYQFORschUCm9aYbo5xI0SENykt4rr0oGXwW53C00B0yyIkLC');
-const { v4: uuidv4 } = require('uuid');
-
 
 router.post("/bookroom", async (req, res) => {
-    const { room, userid, fromdate, todate, totalamount, totaldays, token, guestCount } = req.body;
+    const { room, userid, fromdate, todate, totalamount, totaldays, guestCount, username } = req.body;
 
     try {
-        const customer = await stripe.customers.create({
-            email: token.email,
-            source: token.id
+        const newbooking = new Booking({
+            room: room.name,
+            roomid: room._id,
+            username,
+            userid,
+            fromdate,
+            todate,
+            totalamount,
+            totaldays,
+            guestCount
         });
 
-        const payment = await stripe.paymentIntents.create({
-            amount: totalamount * 100,
-            customer: customer.id,
-            currency: 'inr',
-            receipt_email: token.email
-        }, {
-            idempotencyKey: uuidv4()
+        const booking = await newbooking.save();
+        const roomtemp = await Room.findOne({ _id: room._id });
+        roomtemp.currentbookings.push({
+            bookingid: booking._id,
+            fromdate,
+            todate,
+            userid,
+            status: booking.status
         });
+        await roomtemp.save();
 
-        if (payment) {
-            try {
-                const newbooking = new Booking({
-                    room: room.name,
-                    roomid: room._id,
-                    userid,
-                    fromdate,
-                    todate,
-                    totalamount,
-                    totaldays,
-                    transactionid: payment.id, // Use the actual transaction ID
-                    guestCount
-                });
-
-                const booking = await newbooking.save();
-                const roomtemp = await Room.findOne({ _id: room._id });
-                roomtemp.currentbookings.push({
-                    bookingid: booking._id,
-                    fromdate,
-                    todate,
-                    userid,
-                    status: booking.status
-                });
-                await roomtemp.save();
-
-                // Decrement the count for the booked room
-                // const updatedRoom = await Room.findByIdAndUpdate(
-                //     room._id,
-                //     { $inc: { count: -1 } },
-                //     { new: true }
-                // );
-
-                // if (!updatedRoom) {
-                //     return res.status(404).json({ success: false, message: "Room not found" });
-                // }
-
-                res.status(200).send("Room Booked Successfully");
-            } catch (error) {
-                console.error(error);
-                res.status(500).json({ error });
-            }
-        } else {
-            res.status(402).json({ error });
-        }
+        res.status(200).send("Room Booked Successfully");
     } catch (error) {
         console.error(error);
-        res.status(400).json({ error });
+        res.status(500).json({ error: "Internal Server Error" });
     }
 });
+
+
 
 router.post("/getbookingsbyuserid", async (req, res) => {
     console.log("Request received for getbookingsbyuserid");
